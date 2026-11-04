@@ -1,6 +1,6 @@
 (() => {
   const content = window.BASMALA_CONTENT || { courses: [] };
-  const key = 'basmala.progress.v1';
+  const key = 'murabitoun.progress.v1';
   const readProgress = () => {
     try {
       const saved = JSON.parse(localStorage.getItem(key)) || {};
@@ -13,35 +13,44 @@
   };
   let progress = readProgress();
   const save = () => localStorage.setItem(key, JSON.stringify(progress));
-  const allQuizzes = () => content.courses.flatMap(course => course.quizzes.map(quiz => ({ course, quiz })));
+  const allQuizzes = () => content.courses.flatMap(course => (course.quizzes || []).map(quiz => ({ course, quiz })));
   const safe = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[char]);
-  const questionTotal = quizzes => quizzes.reduce((sum, quiz) => sum + quiz.questions.length, 0);
+  const questionTotal = quizzes => quizzes.reduce((sum, quiz) => sum + (quiz.questions || []).length, 0);
+  const formatCourseDate = value => {
+    if (!value) return '';
+    const [year, month, day] = value.split('-').map(Number);
+    if (!year || !month || !day) return '';
+    const date = new Date(year, month - 1, day, 12);
+    const weekdays = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    return `${weekdays[date.getDay()]} ${day}/${month}/${year}`;
+  };
   const page = () => location.hash.replace(/^#\/?/, '') || 'home';
   const route = (name, label, active) => `<a class="nav-link ${active ? 'active' : ''}" href="#${name}">${label}</a>`;
   const layout = (body, current) => `
     <header class="site-header"><div class="container py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-      <a class="d-flex align-items-center gap-2 text-decoration-none" href="#home"><span class="brand-mark">ب</span><span class="brand-name">بسملة</span></a>
+      <a class="brand-lockup d-flex align-items-center gap-2 text-decoration-none" href="#home"><img class="brand-logo" src="./assets/logo.png" alt="شعار مرابطون" onerror="this.hidden=true;this.nextElementSibling.classList.remove('visually-hidden')"><span class="brand-name visually-hidden">مرابطون</span></a>
       <nav class="nav flex-nowrap overflow-auto" aria-label="التنقل الرئيسي">
         ${route('home','الرئيسية',current==='home')}${route('courses','المقررات',current==='courses')}${route('favorites','المفضلة',current==='favorites')}${route('progress','تقدمي',current==='progress')}${route('history','مراجعاتي',current==='history')}
       </nav>
     </div></header>
     <main class="container py-4 py-lg-5 fade-in">${body}</main>
-    <footer><div class="container py-4 d-flex flex-column flex-md-row justify-content-between gap-2"><span>بسملة · مساحة هادئة للتعلّم والمراجعة</span><span>تُحفظ نتائجك ومفضلاتك على هذا الجهاز فقط</span></div></footer>`;
+    <footer><div class="container py-4 d-flex flex-column flex-md-row justify-content-between gap-2"><span>مرابطون · جميع الحقوق محفوظة 2026</span><span>تُحفظ نتائجك ومفضلاتك على هذا الجهاز فقط</span></div></footer>`;
 
   function courseCard(course) {
-    const done = course.quizzes.filter(({ id }) => progress.attempts.some(attempt => attempt.quizId === id)).length;
-    const percent = course.quizzes.length ? Math.round(done / course.quizzes.length * 100) : 0;
+    const quizzes = course.quizzes || [];
+    const done = quizzes.filter(({ id }) => progress.attempts.some(attempt => attempt.quizId === id)).length;
+    const percent = quizzes.length ? Math.round(done / quizzes.length * 100) : 0;
     const fav = progress.favorites.includes(course.id);
     const completed = progress.completedCourses.includes(course.id);
     const resourceTypes = { lecture:'محاضرة', book:'كتاب', matn:'متن' };
+    const courseDate = formatCourseDate(course.date);
     return `<article class="content-card p-4 d-flex flex-column gap-3">
       <div class="d-flex justify-content-between align-items-start"><span class="icon-box">${course.category === 'اللغة' ? 'ا' : course.category === 'الحاسوب' ? '⌘' : '◎'}</span>
       <button class="btn btn-sm ${fav ? 'btn-basmala' : 'btn-outline-basmala'}" data-favorite="${safe(course.id)}" aria-label="${fav ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة'}">${fav ? '♥' : '♡'}</button></div>
-      <div class="flex-grow-1"><div class="d-flex flex-wrap gap-2"><span class="category-label">${safe(resourceTypes[course.resourceType] || 'محاضرة')}</span><span class="category-label">${safe(course.category || 'عام')}</span></div><h2 class="h5 fw-bold mt-3">${safe(course.title)}</h2><p class="text-secondary mb-0">${safe(course.description)}</p></div>
+      <div class="flex-grow-1"><div class="d-flex flex-wrap gap-2"><span class="category-label">${safe(resourceTypes[course.resourceType] || 'محاضرة')}</span><span class="category-label">${safe(course.category || 'عام')}</span>${course.lectureNumber ? `<span class="category-label">المحاضرة ${safe(course.lectureNumber)}</span>` : ''}</div><h2 class="h5 fw-bold mt-3">${safe(course.title)}</h2>${course.lecturer ? `<p class="text-secondary mb-1">المحاضر: ${safe(course.lecturer)}</p>` : ''}${courseDate ? `<p class="text-secondary mb-0">${safe(courseDate)}</p>` : ''}${course.description ? `<p class="text-secondary mt-2 mb-0">${safe(course.description)}</p>` : ''}</div>
       <label class="form-check d-flex align-items-center gap-2 mb-0"><input class="form-check-input ms-0 mt-0" type="checkbox" data-course-completion="${safe(course.id)}" ${completed ? 'checked' : ''}><span class="form-check-label fw-bold">${completed ? 'تم إتمام المقرر' : 'أتممت المقرر'}</span></label>
-      <div class="small text-secondary">${course.quizzes.length} اختبارات · ${questionTotal(course.quizzes)} أسئلة</div>
-      <div><div class="progress" role="progressbar" aria-label="تقدمك في ${safe(course.title)}" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width:${percent}%"></div></div><div class="small text-secondary mt-1">أُنجز ${percent}% من الاختبارات</div></div>
-      <button class="btn btn-basmala w-100" data-course="${safe(course.id)}">استعرض الاختبارات</button>
+      ${quizzes.length ? `<div class="small text-secondary">${quizzes.length} اختبارات · ${questionTotal(quizzes)} أسئلة</div><div><div class="progress" role="progressbar" aria-label="تقدمك في ${safe(course.title)}" aria-valuenow="${percent}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width:${percent}%"></div></div><div class="small text-secondary mt-1">أُنجز ${percent}% من الاختبارات</div></div>` : '<div class="small text-secondary">المحتوى قريبًا</div>'}
+      <button class="btn btn-basmala w-100" data-course="${safe(course.id)}">عرض تفاصيل المقرر</button>
     </article>`;
   }
   function courseGrid(courses) {
@@ -51,7 +60,7 @@
   function home() {
     const quizzes = allQuizzes();
     const average = progress.attempts.length ? Math.round(progress.attempts.reduce((sum, attempt) => sum + attempt.percent, 0) / progress.attempts.length) : null;
-    return `<section class="hero mb-5"><div class="eyebrow mb-2">أهلاً بك في بسملة</div><h1 class="display-5 fw-bold">خطوة صغيرة كل يوم،<br>ومعرفة تبقى معك.</h1><p class="lead text-secondary mt-3 mb-4" style="max-width:640px">اختر مقرراً وابدأ المراجعة فوراً. تدرّب على الأسئلة، تعرّف على إجاباتك، وتابع تقدمك دون تسجيل أو حساب.</p><div class="d-flex flex-wrap gap-2"><a href="#courses" class="btn btn-basmala btn-lg">ابدأ المراجعة</a><a href="#progress" class="btn btn-outline-basmala btn-lg">عرض تقدمي</a></div></section>
+    return `<section class="hero mb-5"><div class="eyebrow hero-eyebrow">أهلاً بك في مرابطون</div><h1 class="hero-title fw-bold">تعلّم بوعي، وراجع بفهم،<br> وأتقن ما تتعلّم.</h1><p class="hero-copy text-secondary">كل ما تحتاجه لمراجعة مقرراتك واختبار فهمك، من أسئلة تفاعلية تساعدك على تثبيت المعلومات وتحديد ما يحتاج منك إلى مزيد من المراجعة.</p><div class="hero-actions d-flex flex-wrap gap-2"><a href="#courses" class="btn btn-basmala">ابدأ المراجعة</a><a href="#progress" class="btn btn-outline-basmala">عرض تقدمي</a></div></section>
       <section class="mb-5"><h2 class="section-title mb-3">مساحتك التعليمية</h2><div class="row g-3"><div class="col-6 col-lg-3"><div class="content-card p-3"><div class="stat-number">${content.courses.length}</div><div class="text-secondary">مقررات</div></div></div><div class="col-6 col-lg-3"><div class="content-card p-3"><div class="stat-number">${quizzes.length}</div><div class="text-secondary">اختبارات</div></div></div><div class="col-6 col-lg-3"><div class="content-card p-3"><div class="stat-number">${questionTotal(quizzes.map(item => item.quiz))}</div><div class="text-secondary">أسئلة</div></div></div><div class="col-6 col-lg-3"><div class="content-card p-3"><div class="stat-number">${average === null ? '—' : `${average}%`}</div><div class="text-secondary">متوسط نتائجك</div></div></div></div></section>
       <section><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="section-title mb-0">المقررات</h2><a href="#courses" class="text-success fw-bold">عرض الكل ←</a></div>${courseGrid(content.courses.slice(0,3))}</section>`;
   }
@@ -62,7 +71,11 @@
   function courseDetail(id) {
     const course = content.courses.find(item => item.id === id);
     if (!course) return `<div class="alert alert-warning">لم نعثر على هذا المقرر. <a href="#courses">العودة إلى المقررات</a></div>`;
-    return `<button class="btn btn-link px-0 text-success" data-go="courses">← كل المقررات</button><div class="eyebrow">${safe(course.category || 'مقرر')}</div><h1 class="section-title">${safe(course.title)}</h1><p class="text-secondary mb-4">${safe(course.description)}</p><div class="row g-3">${course.quizzes.map(quiz => `<div class="col-md-6"><article class="content-card p-4"><div class="d-flex justify-content-between gap-2"><div><h2 class="h5 fw-bold">${safe(quiz.title)}</h2><p class="text-secondary">${safe(quiz.description || '')}</p></div><span class="category-label">${quiz.mode === 'practice' ? 'تدريب' : 'اختبار'}</span></div><div class="small text-secondary mb-3">${quiz.questions.length} أسئلة${progress.attempts.some(attempt => attempt.quizId === quiz.id) ? ' · أتممت هذا الاختبار سابقاً' : ''}</div><button class="btn btn-basmala" data-quiz="${safe(quiz.id)}">ابدأ الاختبار</button></article></div>`).join('')}</div>`;
+    const quizzes = course.quizzes || [];
+    const courseDate = formatCourseDate(course.date);
+    const lectureInfo = `<div class="content-card p-4 mb-4"><div class="d-flex flex-wrap gap-2 mb-3"><span class="category-label">${safe(course.category || 'مقرر')}</span>${course.lectureNumber ? `<span class="category-label">المحاضرة ${safe(course.lectureNumber)}</span>` : ''}</div><h1 class="section-title">${safe(course.title)}</h1>${course.lecturer ? `<p class="mb-1">المحاضر: ${safe(course.lecturer)}</p>` : ''}${courseDate ? `<p class="text-secondary mb-0">${safe(courseDate)}</p>` : ''}${course.description ? `<p class="text-secondary mt-3 mb-0">${safe(course.description)}</p>` : ''}</div>`;
+    const quizContent = quizzes.length ? `<div class="row g-3">${quizzes.map(quiz => `<div class="col-md-6"><article class="content-card p-4"><div class="d-flex justify-content-between gap-2"><div><h2 class="h5 fw-bold">${safe(quiz.title)}</h2>${quiz.description ? `<p class="text-secondary">${safe(quiz.description)}</p>` : ''}</div><span class="category-label">${quiz.mode === 'practice' ? 'تدريب' : 'اختبار'}</span></div><div class="small text-secondary mb-3">${(quiz.questions || []).length} أسئلة${progress.attempts.some(attempt => attempt.quizId === quiz.id) ? ' · أتممت هذا الاختبار سابقاً' : ''}</div><button class="btn btn-basmala" data-quiz="${safe(quiz.id)}">ابدأ الاختبار</button></article></div>`).join('')}</div>` : '<div class="alert alert-light border">المحتوى قريبًا</div>';
+    return `<button class="btn btn-link px-0 text-success" data-go="courses">← كل المقررات</button>${lectureInfo}${quizContent}`;
   }
   function progressView() {
     const attempts = progress.attempts;
