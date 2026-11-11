@@ -29,7 +29,7 @@ a { color:inherit; }
 .brand-lockup { min-height:44px; }
 .brand-logo { display:block; width:auto; max-width:160px; height:58px; object-fit:contain; }
 .brand-name { font-size:1.3rem; font-weight:800; color:var(--brand-burgundy); text-decoration:none; }
-.nav-link { border-radius:10px; padding:.55rem .85rem!important; color:var(--muted); font-weight:700; }
+.nav-link { flex:0 0 auto; white-space:nowrap; border-radius:10px; padding:.55rem .85rem!important; color:var(--muted); font-weight:700; }
 .nav-link:hover,.nav-link.active { background:var(--brand-blush); color:var(--brand-burgundy-dark); }
 main { min-height:calc(100vh - 150px); }
 .hero { position:relative; overflow:hidden; padding:clamp(1.5rem,4.5vw,3.75rem); border:1px solid #e8d8d2; border-radius:18px; background:linear-gradient(115deg,#f6eaea 0%,#fbf8f2 68%,#f3ead6 100%); }
@@ -60,6 +60,15 @@ main { min-height:calc(100vh - 150px); }
 .form-control:focus,.form-select:focus { border-color:rgba(155,10,34,.55); box-shadow:0 0 0 .25rem rgba(155,10,34,.14); }
 .answer-correct { border-color:#6a9c71; background:#eff7ef; }
 .answer-wrong { border-color:#d58c83; background:#fff2ef; }
+.quiz-progress-wrap { max-width:860px; margin-inline:auto; }
+.quiz-timer { display:inline-flex; align-items:center; gap:.3rem; min-width:5rem; justify-content:center; padding:.35rem .65rem; border:1px solid var(--line); border-radius:20px; background:#fff; color:var(--brand-burgundy-dark); font-weight:800; font-variant-numeric:tabular-nums; }
+.quiz-timer.is-urgent { border-color:#d58c83; background:#fff2ef; color:#a3281e; }
+.quiz-question-stage { max-width:860px; margin-inline:auto; }
+.quiz-question-card { min-height:240px; height:auto; transition:opacity .18s ease,transform .18s ease; }
+.quiz-question-card:hover { transform:none; }
+.quiz-result-card { max-width:720px; margin:2rem auto; height:auto; }
+@media (prefers-reduced-motion:no-preference) { .quiz-question-card { animation:quiz-question-in .22s ease both; } }
+@keyframes quiz-question-in { from { opacity:.45; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 footer { border-top:1px solid var(--line); background:rgba(255,255,255,.65); color:var(--muted); }
 .fade-in { animation:fade-in .35s ease both; }
 @keyframes fade-in { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }

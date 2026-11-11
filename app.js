@@ -12,6 +12,7 @@
     } catch { return { attempts: [], favorites: [], completedCourses: [] }; }
   };
   let progress = readProgress();
+  let activeQuizCleanup = null;
   const save = () => localStorage.setItem(key, JSON.stringify(progress));
   const allQuizzes = () => content.courses.flatMap(course => (course.quizzes || []).map(quiz => ({ course, quiz })));
   const safe = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[char]);
@@ -92,9 +93,20 @@
     const found = allQuizzes().find(item => item.quiz.id === id);
     if (!found) return '<div class="alert alert-warning">الاختبار غير موجود.</div>';
     const { course, quiz } = found;
-    return `<div class="eyebrow">${safe(course.title)}</div><h1 class="section-title">${safe(quiz.title)}</h1><p class="text-secondary mb-4">أجب عن الأسئلة ثم اضغط على زر التصحيح.</p><form id="quiz-form" data-quiz-id="${safe(quiz.id)}" data-course-id="${safe(course.id)}">${quiz.questions.map((question,index) => `<fieldset class="content-card p-4 mb-3"><legend class="h5 fw-bold">${index+1}. ${safe(question.text)}</legend><div class="d-grid gap-2 mt-3">${question.options.map((option,optionIndex) => `<label class="question-option"><input type="radio" name="${safe(question.id)}" value="${optionIndex}"><span>${safe(option)}</span></label>`).join('')}</div><div class="answer-feedback small mt-3" data-feedback="${safe(question.id)}" hidden></div></fieldset>`).join('')}<button class="btn btn-basmala btn-lg" type="submit">تصحيح الاختبار</button> <button class="btn btn-outline-basmala btn-lg" type="button" data-go="course/${safe(course.id)}">عودة للمقرر</button><div id="quiz-result" class="mt-4" aria-live="polite"></div></form>`;
+    if (!quiz.questions.length) return '<div class="alert alert-light border">لا توجد أسئلة في هذا الاختبار.</div>';
+    const firstQuestion = quiz.questions[0];
+    return `<div class="eyebrow">${safe(course.title)}</div><h1 class="section-title">${safe(quiz.title)}</h1><form id="quiz-form" data-quiz-id="${safe(quiz.id)}" data-course-id="${safe(course.id)}" novalidate>
+      <div class="quiz-progress-wrap mb-3">
+        <div class="d-flex justify-content-between align-items-center gap-3 mb-2"><strong id="quiz-question-count" aria-live="polite">السؤال 1 من ${quiz.questions.length}</strong><span class="quiz-timer" role="timer" aria-label="الوقت المتبقي"><span aria-hidden="true">⏱</span> <span id="quiz-timer-value">20</span> ث</span></div>
+        <div class="progress" role="progressbar" aria-label="تقدم الاختبار" aria-valuenow="1" aria-valuemin="0" aria-valuemax="${quiz.questions.length}"><div id="quiz-progress-bar" class="progress-bar" style="width:${100 / quiz.questions.length}%"></div></div>
+      </div>
+      <div id="quiz-question" class="quiz-question-stage"><fieldset class="content-card quiz-question-card p-4 mb-3"><legend class="h5 fw-bold">1. ${safe(firstQuestion.text)}</legend><div class="d-grid gap-2 mt-3">${firstQuestion.options.map((option,optionIndex) => `<label class="question-option"><input type="radio" name="quiz-answer" value="${optionIndex}"><span>${safe(option)}</span></label>`).join('')}</div><div class="answer-feedback small mt-3" hidden></div></fieldset></div>
+      <button class="btn btn-outline-basmala" type="button" data-go="course/${safe(course.id)}">عودة للمقرر</button>
+    </form>`;
   }
   function render() {
+    activeQuizCleanup?.();
+    activeQuizCleanup = null;
     progress = readProgress();
     const current = page();
     let body;
@@ -126,29 +138,105 @@
     document.querySelector('[data-clear]')?.addEventListener('click', () => {
       if (confirm('هل تريد مسح كل نتائجك ومفضلاتك وحالات إتمام المقررات المحفوظة على هذا الجهاز؟')) { progress = { attempts: [], favorites: [], completedCourses: [] }; save(); render(); }
     });
-    document.getElementById('quiz-form')?.addEventListener('submit', event => {
-      event.preventDefault();
-      const form = event.currentTarget;
-      const quiz = allQuizzes().find(item => item.quiz.id === form.dataset.quizId).quiz;
-      const answers = {};
-      quiz.questions.forEach(question => { const selected = form.querySelector(`input[name="${CSS.escape(question.id)}"]:checked`); if (selected) answers[question.id] = Number(selected.value); });
-      let score = 0;
-      quiz.questions.forEach(question => {
-        const selected = answers[question.id];
-        const feedback = form.querySelector(`[data-feedback="${CSS.escape(question.id)}"]`);
-        const labels = [...form.querySelectorAll(`input[name="${CSS.escape(question.id)}"]`)].map(input => input.closest('label'));
-        labels.forEach((label,index) => { if (index === question.correctAnswer) label.classList.add('answer-correct'); else if (index === selected) label.classList.add('answer-wrong'); });
-        if (selected === question.correctAnswer) score++;
-        feedback.hidden = false;
-        feedback.innerHTML = `${selected === question.correctAnswer ? '<span class="text-success fw-bold">إجابة صحيحة.</span>' : '<span class="text-danger fw-bold">الإجابة الصحيحة: ' + safe(question.options[question.correctAnswer]) + '.</span>'} ${safe(question.explanation || '')}`;
+    const quizForm = document.getElementById('quiz-form');
+    if (quizForm) bindQuiz(quizForm);
+  }
+  function bindQuiz(form) {
+    const found = allQuizzes().find(item => item.quiz.id === form.dataset.quizId);
+    if (!found) return;
+    const { course, quiz } = found;
+    const questions = quiz.questions;
+    const answers = new Array(questions.length).fill(null);
+    const defaultSeconds = 20;
+    const questionContainer = form.querySelector('#quiz-question');
+    const counter = form.querySelector('#quiz-question-count');
+    const timerValue = form.querySelector('#quiz-timer-value');
+    const progressTrack = form.querySelector('.progress');
+    const progressBar = form.querySelector('#quiz-progress-bar');
+    let currentIndex = 0;
+    let deadline = 0;
+    let timerId = null;
+    let transitionId = null;
+    let locked = false;
+    let finished = false;
+
+    const clearTimer = () => {
+      if (timerId !== null) window.clearInterval(timerId);
+      timerId = null;
+    };
+    const cleanup = () => {
+      clearTimer();
+      if (transitionId !== null) window.clearTimeout(transitionId);
+      transitionId = null;
+    };
+    activeQuizCleanup = cleanup;
+
+    function renderQuestion() {
+      const question = questions[currentIndex];
+      const questionNumber = currentIndex + 1;
+      const seconds = Number(question.timeLimit ?? quiz.questionTimeLimit);
+      const duration = Number.isFinite(seconds) && seconds > 0 ? seconds : defaultSeconds;
+      locked = false;
+      counter.textContent = `السؤال ${questionNumber} من ${questions.length}`;
+      progressTrack.setAttribute('aria-valuenow', String(questionNumber));
+      progressBar.style.width = `${questionNumber / questions.length * 100}%`;
+      questionContainer.innerHTML = `<fieldset class="content-card quiz-question-card p-4 mb-3"><legend class="h5 fw-bold">${questionNumber}. ${safe(question.text)}</legend><div class="d-grid gap-2 mt-3">${question.options.map((option,optionIndex) => `<label class="question-option"><input type="radio" name="quiz-answer" value="${optionIndex}"><span>${safe(option)}</span></label>`).join('')}</div><div class="answer-feedback small mt-3" hidden></div></fieldset>`;
+      deadline = Date.now() + duration * 1000;
+      timerValue.textContent = String(duration);
+      timerValue.parentElement.classList.remove('is-urgent');
+      clearTimer();
+      timerId = window.setInterval(updateTimer, 100);
+      updateTimer();
+    }
+
+    function updateTimer() {
+      const remaining = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      timerValue.textContent = String(remaining);
+      timerValue.parentElement.classList.toggle('is-urgent', remaining <= 5);
+      if (remaining === 0) acceptAnswer(null, true);
+    }
+
+    function acceptAnswer(selected, timedOut) {
+      if (locked || finished) return;
+      locked = true;
+      clearTimer();
+      const question = questions[currentIndex];
+      answers[currentIndex] = selected;
+      const feedback = questionContainer.querySelector('.answer-feedback');
+      const labels = [...questionContainer.querySelectorAll('.question-option')];
+      questionContainer.querySelectorAll('input').forEach(input => { input.disabled = true; });
+      labels.forEach((label, index) => {
+        if (index === question.correctAnswer) label.classList.add('answer-correct');
+        else if (index === selected) label.classList.add('answer-wrong');
       });
-      const percent = quiz.questions.length ? Math.round(score / quiz.questions.length * 100) : 0;
-      progress.attempts.push({ quizId: quiz.id, courseId: form.dataset.courseId, score, total: quiz.questions.length, percent, date: new Date().toISOString() });
+      feedback.hidden = false;
+      if (timedOut) {
+        feedback.innerHTML = `انتهى الوقت. الإجابة الصحيحة: ${safe(question.options[question.correctAnswer])}. ${safe(question.explanation || '')}`;
+      } else {
+        feedback.innerHTML = `${selected === question.correctAnswer ? '<span class="text-success fw-bold">إجابة صحيحة.</span>' : '<span class="text-danger fw-bold">إجابة غير صحيحة. الإجابة الصحيحة: ' + safe(question.options[question.correctAnswer]) + '.</span>'} ${safe(question.explanation || '')}`;
+      }
+      transitionId = window.setTimeout(() => {
+        transitionId = null;
+        if (currentIndex + 1 >= questions.length) finishQuiz();
+        else { currentIndex++; renderQuestion(); }
+      }, timedOut ? 350 : 500);
+    }
+
+    function finishQuiz() {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      const score = answers.reduce((total, answer, index) => total + (answer === questions[index].correctAnswer ? 1 : 0), 0);
+      const percent = Math.round(score / questions.length * 100);
+      progress.attempts.push({ quizId:quiz.id, courseId:course.id, score, total:questions.length, percent, date:new Date().toISOString() });
       save();
-      document.getElementById('quiz-result').innerHTML = `<div class="alert ${percent >= 60 ? 'alert-success' : 'alert-warning'}"><strong>نتيجتك: ${score} من ${quiz.questions.length} (${percent}%)</strong><div>أُضيفت هذه المحاولة إلى سجل مراجعاتك على هذا الجهاز.</div></div>`;
-      form.querySelectorAll('input').forEach(input => { input.disabled = true; });
-      form.querySelector('button[type="submit"]').disabled = true;
+      form.innerHTML = `<div class="content-card quiz-result-card p-4 p-md-5 text-center" role="status"><div class="eyebrow mb-2">اكتمل الاختبار</div><h2 class="h4 fw-bold">نتيجتك: ${score} من ${questions.length}</h2><p class="stat-number mb-2">${percent}%</p><p class="text-secondary">أُضيفت هذه المحاولة إلى سجل مراجعاتك على هذا الجهاز.</p><a class="btn btn-basmala" href="#course/${safe(course.id)}">العودة إلى المقرر</a></div>`;
+    }
+
+    form.addEventListener('change', event => {
+      if (event.target.matches('input[type="radio"]')) acceptAnswer(Number(event.target.value), false);
     });
+    renderQuestion();
   }
   function bindCourseButtons() {
     document.querySelectorAll('[data-course]').forEach(button => button.addEventListener('click', () => { location.hash = `course/${button.dataset.course}`; }));
