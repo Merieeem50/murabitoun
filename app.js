@@ -158,6 +158,7 @@
     const quizStartedAt = Date.now();
     let timerId = null;
     let transitionId = null;
+    let feedbackCountdownId = null;
     let locked = false;
     let finished = false;
 
@@ -169,6 +170,8 @@
       clearTimer();
       if (transitionId !== null) window.clearTimeout(transitionId);
       transitionId = null;
+      if (feedbackCountdownId !== null) window.clearInterval(feedbackCountdownId);
+      feedbackCountdownId = null;
     };
     activeQuizCleanup = cleanup;
 
@@ -216,8 +219,18 @@
       } else {
         feedback.innerHTML = `${selected === question.correctAnswer ? '<span class="text-success fw-bold">إجابة صحيحة.</span>' : '<span class="text-danger fw-bold">إجابة غير صحيحة. الإجابة الصحيحة: ' + safe(question.options[question.correctAnswer]) + '.</span>'} ${safe(question.explanation || '')}`;
       }
+      const isLastQuestion = currentIndex + 1 >= questions.length;
+      feedback.insertAdjacentHTML('beforeend', `<div class="feedback-countdown" role="status">${isLastQuestion ? 'ستظهر النتيجة' : 'الانتقال إلى السؤال التالي'} بعد <strong>5</strong> ثوانٍ</div>`);
+      const feedbackDeadline = Date.now() + 5000;
+      const feedbackCountdown = feedback.querySelector('.feedback-countdown strong');
+      feedbackCountdownId = window.setInterval(() => {
+        const remaining = Math.max(0, Math.ceil((feedbackDeadline - Date.now()) / 1000));
+        feedbackCountdown.textContent = String(remaining);
+      }, 100);
       transitionId = window.setTimeout(() => {
         transitionId = null;
+        if (feedbackCountdownId !== null) window.clearInterval(feedbackCountdownId);
+        feedbackCountdownId = null;
         if (currentIndex + 1 >= questions.length) finishQuiz();
         else { currentIndex++; renderQuestion(); }
       }, 5000);
