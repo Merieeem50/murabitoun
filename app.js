@@ -155,6 +155,7 @@
     const progressBar = form.querySelector('#quiz-progress-bar');
     let currentIndex = 0;
     let deadline = 0;
+    const quizStartedAt = Date.now();
     let timerId = null;
     let transitionId = null;
     let locked = false;
@@ -219,7 +220,7 @@
         transitionId = null;
         if (currentIndex + 1 >= questions.length) finishQuiz();
         else { currentIndex++; renderQuestion(); }
-      }, timedOut ? 350 : 500);
+      }, 5000);
     }
 
     function finishQuiz() {
@@ -228,9 +229,24 @@
       cleanup();
       const score = answers.reduce((total, answer, index) => total + (answer === questions[index].correctAnswer ? 1 : 0), 0);
       const percent = Math.round(score / questions.length * 100);
-      progress.attempts.push({ quizId:quiz.id, courseId:course.id, score, total:questions.length, percent, date:new Date().toISOString() });
+      const durationSeconds = Math.max(0, Math.round((Date.now() - quizStartedAt) / 1000));
+      const review = questions.map((question, index) => ({
+        questionId:question.id,
+        selectedAnswer:answers[index],
+        correctAnswer:question.correctAnswer,
+        timedOut:answers[index] === null
+      }));
+      progress.attempts.push({ quizId:quiz.id, courseId:course.id, score, total:questions.length, percent, durationSeconds, answers:review, date:new Date().toISOString() });
       save();
-      form.innerHTML = `<div class="content-card quiz-result-card p-4 p-md-5 text-center" role="status"><div class="eyebrow mb-2">اكتمل الاختبار</div><h2 class="h4 fw-bold">نتيجتك: ${score} من ${questions.length}</h2><p class="stat-number mb-2">${percent}%</p><p class="text-secondary">أُضيفت هذه المحاولة إلى سجل مراجعاتك على هذا الجهاز.</p><a class="btn btn-basmala" href="#course/${safe(course.id)}">العودة إلى المقرر</a></div>`;
+      const wrongAnswers = review.map((answer, index) => ({ ...answer, question:questions[index] })).filter(answer => answer.selectedAnswer !== answer.correctAnswer);
+      const rating = percent >= 90 ? 'ممتاز' : percent >= 80 ? 'جيد جدًا' : percent >= 65 ? 'جيد' : percent >= 50 ? 'مقبول' : 'يحتاج إلى مراجعة';
+      const durationLabel = durationSeconds < 60
+        ? `${durationSeconds} ثانية`
+        : `${Math.floor(durationSeconds / 60)} دقيقة و${durationSeconds % 60} ثانية`;
+      const reviewContent = wrongAnswers.length
+        ? `<section class="quiz-review mt-4"><div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-3"><h3 class="h5 fw-bold mb-0">مراجعة الإجابات غير الصحيحة</h3><span class="category-label">${wrongAnswers.length} أخطاء</span></div><div class="d-grid gap-3">${wrongAnswers.map((answer, index) => `<article class="quiz-review-item"><h4 class="h6 fw-bold mb-3">${index + 1}. ${safe(answer.question.text)}</h4><p class="quiz-answer-wrong mb-2"><strong>${answer.timedOut ? 'لم تتم الإجابة' : 'إجابتك'}</strong>${answer.timedOut ? ' · انتهى الوقت' : `: ${safe(answer.question.options[answer.selectedAnswer])}`}</p><p class="quiz-answer-correct mb-0"><strong>الإجابة الصحيحة:</strong> ${safe(answer.question.options[answer.correctAnswer])}</p>${answer.question.explanation ? `<p class="quiz-explanation mb-0">${safe(answer.question.explanation)}</p>` : ''}</article>`).join('')}</div></section>`
+        : '<div class="alert alert-success mt-4 mb-0">أحسنت، لم تسجل أي إجابة خاطئة.</div>';
+      form.innerHTML = `<section class="quiz-result-page" role="status"><div class="content-card quiz-result-card p-4 p-md-5"><div class="text-center"><div class="eyebrow mb-2">اكتمل الاختبار</div><h2 class="h4 fw-bold mb-3">${safe(quiz.title)}</h2><div class="quiz-score-main" aria-label="${score} من ${questions.length}"><span>${score}</span><span class="quiz-score-divider">/</span><span>${questions.length}</span></div><div class="quiz-score-rating">${rating} · ${percent}%</div><div class="quiz-result-meta"><div><span class="quiz-meta-label">الوقت المستغرق</span><strong>${durationLabel}</strong></div><div><span class="quiz-meta-label">الإجابات الخاطئة</span><strong>${wrongAnswers.length} من ${questions.length}</strong></div></div><p class="quiz-saved-message mb-0"><span aria-hidden="true">✓</span> تم حفظ نتيجتك بنجاح في سجل مراجعاتك.</p></div>${reviewContent}<div class="text-center mt-4"><a class="btn btn-basmala" href="#course/${safe(course.id)}">العودة إلى المقرر</a></div></div></section>`;
     }
 
     form.addEventListener('change', event => {
