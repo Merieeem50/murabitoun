@@ -1,108 +1,205 @@
 window.BASMALA_CONTENT = {
-  label: "محاضرات مرابطون",
-  courses: [
+  "label": "محاضرات مرابطون",
+  "courses": [
     {
-      id: "lecture-1",
-      lectureNumber: 1,
-      title: "بيت المقدس في القرآن",
-      lecturer: "د. محمد النوباني",
-      date: "2026-11-05",
-      resourceType: "lecture",
-      category: "القدس والأقصى",
-      description: "",
-      quizzes: []
-    },
-    {
-      id: "lecture-2",
-      lectureNumber: 2,
-      title: "تاريخ المسجد الأقصى",
-      lecturer: "د. عبد الله معروف",
-      date: "2026-11-08",
-      resourceType: "lecture",
-      category: "القدس والأقصى",
-      description: "",
-      quizzes: []
-    },
-    {
-      id: "lecture-3",
-      lectureNumber: 3,
-      title: "بين الوعد الحق والوعد المفترى (تاريخ الصهيونية وعلاقتها بالأقصى)",
-      lecturer: "أ. محمد الرشق",
-      date: "2026-11-12",
-      resourceType: "lecture",
-      category: "القدس والأقصى",
-      description: "",
-      quizzes: []
-    },
-    {
-      id: "lecture-4",
-      lectureNumber: 4,
-      title: "الأقصى بعيون مقدسية",
-      lecturer: "أ. عمر عاصي",
-      date: "2026-11-15",
-      resourceType: "lecture",
-      category: "القدس والأقصى",
-      description: "",
-      quizzes: []
-    },
-    {
-      id: "lecture-5",
-      lectureNumber: 5,
-      title: "جيل التحرير",
-      lecturer: "أ. محمد خالد",
-      date: "2026-11-19",
-      resourceType: "lecture",
-      category: "القدس والأقصى",
-      description: "",
-      quizzes: []
-    },
-    {
-      id: "lecture-nur-al-din",
-      lectureNumber: 6,
-      title: "شخصية نور الدين وطريق التحرير",
-      lecturer: "",
-      date: "",
-      resourceType: "lecture",
-      category: "التاريخ الإسلامي",
-      description: "أسئلة من محاضرة شخصية نور الدين وطريق التحرير.",
-      quizzes: [
+      "id": "lecture-nur-al-din",
+      "lectureNumber": 1,
+      "title": "شخصية نور الدين زنكي",
+      "lecturer": "د. نذير الصالحي",
+      "date": "2026-11-08",
+      "resourceType": "lecture",
+      "category": "التاريخ الإسلامي",
+      "description": "أسئلة من محاضرة شخصية نور الدين وطريق التحرير.",
+      "quizzes": [
         {
-          id: "quiz-nur-al-din",
-          title: "أسئلة من محاضرة شخصية نور الدين وطريق التحرير",
-          description: "",
-          mode: "practice",
-          timeLimit: null,
-          questions: [
-            { id: "nur-q1", text: "لماذا نذكر سيرة نور الدين؟", options: ["للتحسر على حالنا", "للتغني بالأمجاد وحسب", "لرفع الهمم فزمانهم أشبه ما يكون بزماننا"], correctAnswer: 2, explanation: "" },
-            { id: "nur-q2", text: "المسلمون قبل فترة نور الدين تخلوا عن دورهم الحضاري فتوقف الاجتهاد ولم تعد الأمة بمجموعها تقدم شيئًا جديدًا.", options: ["صح", "خطأ"], correctAnswer: 0, explanation: "" },
-            { id: "nur-q3", text: "أول مدينة سقطت في يد الصليبيين كانت إمارة:", options: ["الرُها", "حرَّان", "دمشق", "أنطاكيا", "الأول والثاني", "كل ما سبق"], correctAnswer: 4, explanation: "" },
-            { id: "nur-q4", text: "يقال إن الصليبيين قتلوا في أسبوع واحد بعد احتلال بيت المقدس قرابة 70 ألفًا من المسلمين.", options: ["صح", "خطأ"], correctAnswer: 0, explanation: "" },
-            { id: "nur-q5", text: "مدينة دفعت الصليبيين في كل مرة حاولوا دخولها، ثم أسقطها أبناؤها:", options: ["دمشق", "حلب", "عسقلان", "مصر"], correctAnswer: 2, explanation: "لم تقع عسقلان بيد الصليبيين إلا عندما أوقعها أبناؤها في فتنة فاستغلها العدو." },
-            { id: "nur-q6", text: "أصل عائلة نور الدين من الأتراك السلاجقة، وقد خاض ..... معركة ملاذ كرد والتي انتصر فيها ٢٠ ألف مسلم أمام ١٠٠ ألف من الصليبيين.", options: ["جده آق سنقر", "والده عماد الدين", "نور الدين"], correctAnswer: 0, explanation: "" },
-            { id: "nur-q7", text: "زنكي ليس نور الدين، وإنما عماد الدين.", options: ["صح", "خطأ"], correctAnswer: 0, explanation: "في هذه الفترة كان وضع المسلمين صعبًا، فكان الناس يلقبون أبناءهم بأسماء فيها عزة للدين. نور الدين لقب واسمه الحقيقي محمود، وكذلك عماد الدين لقب والده واسم والده زنكي؛ فيكون اسمه كاملًا: نور الدين محمود بن عماد الدين زنكي." },
-            { id: "nur-q8", text: "يقول ابن الأثير: «طالعت سير الملوك فلن أجد بعد الخلفاء الراشدين وعمر بن عبد العزيز مثل ...»", options: ["عماد الدين زنكي", "صلاح الدين الأيوبي", "نور الدين محمود بن زنكي"], correctAnswer: 2, explanation: "" },
-            { id: "nur-q9", text: "من أوصاف نور الدين:", options: ["الملك العادل", "تقي الملوك", "ليث الإسلام", "الخليفة الراشد", "كل ما سبق"], correctAnswer: 4, explanation: "" },
-            { id: "nur-q10", text: "كان ........ يقول: «نحن شرطة الشريعة نمضي أوامرها». ", options: ["القاضي الفاضل", "نور الدين محمود", "صلاح الدين"], correctAnswer: 1, explanation: "" },
-            { id: "nur-q11", text: "كان نور الدين محمود متواضعًا، زاهدًا في أموال الدولة، حريصًا على تطبيق الشريعة، عادلًا في الحكم، كثير الصلاة في الليل والقيام إلى أمر الأمة بالنهار.", options: ["صح", "خطأ"], correctAnswer: 0, explanation: "" },
-            { id: "nur-q12", text: "من أكبر فتوحات نور الدين فتح ........ ومن بعدها فتح ........، وكان لهما دور عظيم في فتح بيت المقدس.", options: ["مصر، دمشق", "دمشق، بغداد", "دمشق، مصر", "حلب، مصر"], correctAnswer: 2, explanation: "" },
-            { id: "nur-q13", text: "صنع نور الدين منبرًا ليوضع في المسجد الأقصى بعد فتحه، ووضعه أمام الناس؛ لماذا؟", options: ["لتجهيز كل شيء قبل التحرك نحو بيت المقدس", "لتشويق نفوس الناس للعمل والمساهمة في هذا الفتح", "كل ما سبق"], correctAnswer: 1, explanation: "" }
+          "id": "quiz-nur-al-din",
+          "title": "أسئلة من محاضرة شخصية نور الدين وطريق التحرير",
+          "description": "",
+          "mode": "practice",
+          "timeLimit": null,
+          "questions": [
+            {
+              "id": "nur-q1",
+              "text": "لماذا نذكر سيرة نور الدين؟",
+              "options": [
+                "للتحسر على حالنا",
+                "للتغني بالأمجاد وحسب",
+                "لرفع الهمم فزمانهم أشبه ما يكون بزماننا"
+              ],
+              "correctAnswer": 2,
+              "explanation": ""
+            },
+            {
+              "id": "nur-q2",
+              "text": "المسلمون قبل فترة نور الدين تخلوا عن دورهم الحضاري فتوقف الاجتهاد ولم تعد الأمة بمجموعها تقدم شيئًا جديدًا.",
+              "options": [
+                "صح",
+                "خطأ"
+              ],
+              "correctAnswer": 0,
+              "explanation": ""
+            },
+            {
+              "id": "nur-q3",
+              "text": "أول مدينة سقطت في يد الصليبيين كانت إمارة:",
+              "options": [
+                "الرُها",
+                "حرَّان",
+                "دمشق",
+                "أنطاكيا",
+                "الأول والثاني",
+                "كل ما سبق"
+              ],
+              "correctAnswer": 4,
+              "explanation": ""
+            },
+            {
+              "id": "nur-q4",
+              "text": "يقال إن الصليبيين قتلوا في أسبوع واحد بعد احتلال بيت المقدس قرابة 70 ألفًا من المسلمين.",
+              "options": [
+                "صح",
+                "خطأ"
+              ],
+              "correctAnswer": 0,
+              "explanation": ""
+            },
+            {
+              "id": "nur-q5",
+              "text": "مدينة دفعت الصليبيين في كل مرة حاولوا دخولها، ثم أسقطها أبناؤها:",
+              "options": [
+                "دمشق",
+                "حلب",
+                "عسقلان",
+                "مصر"
+              ],
+              "correctAnswer": 2,
+              "explanation": "لم تقع عسقلان بيد الصليبيين إلا عندما أوقعها أبناؤها في فتنة فاستغلها العدو."
+            },
+            {
+              "id": "nur-q6",
+              "text": "أصل عائلة نور الدين من الأتراك السلاجقة، وقد خاض ..... معركة ملاذ كرد والتي انتصر فيها ٢٠ ألف مسلم أمام ١٠٠ ألف من الصليبيين.",
+              "options": [
+                "جده آق سنقر",
+                "والده عماد الدين",
+                "نور الدين"
+              ],
+              "correctAnswer": 0,
+              "explanation": ""
+            },
+            {
+              "id": "nur-q7",
+              "text": "زنكي ليس نور الدين، وإنما عماد الدين.",
+              "options": [
+                "صح",
+                "خطأ"
+              ],
+              "correctAnswer": 0,
+              "explanation": "في هذه الفترة كان وضع المسلمين صعبًا، فكان الناس يلقبون أبناءهم بأسماء فيها عزة للدين. نور الدين لقب واسمه الحقيقي محمود، وكذلك عماد الدين لقب والده واسم والده زنكي؛ فيكون اسمه كاملًا: نور الدين محمود بن عماد الدين زنكي."
+            },
+            {
+              "id": "nur-q8",
+              "text": "يقول ابن الأثير: «طالعت سير الملوك فلن أجد بعد الخلفاء الراشدين وعمر بن عبد العزيز مثل ...»",
+              "options": [
+                "عماد الدين زنكي",
+                "صلاح الدين الأيوبي",
+                "نور الدين محمود بن زنكي"
+              ],
+              "correctAnswer": 2,
+              "explanation": ""
+            },
+            {
+              "id": "nur-q9",
+              "text": "من أوصاف نور الدين:",
+              "options": [
+                "الملك العادل",
+                "تقي الملوك",
+                "ليث الإسلام",
+                "الخليفة الراشد",
+                "كل ما سبق"
+              ],
+              "correctAnswer": 4,
+              "explanation": ""
+            },
+            {
+              "id": "nur-q10",
+              "text": "كان ........ يقول: «نحن شرطة الشريعة نمضي أوامرها». ",
+              "options": [
+                "القاضي الفاضل",
+                "نور الدين محمود",
+                "صلاح الدين"
+              ],
+              "correctAnswer": 1,
+              "explanation": ""
+            },
+            {
+              "id": "nur-q11",
+              "text": "كان نور الدين محمود متواضعًا، زاهدًا في أموال الدولة، حريصًا على تطبيق الشريعة، عادلًا في الحكم، كثير الصلاة في الليل والقيام إلى أمر الأمة بالنهار.",
+              "options": [
+                "صح",
+                "خطأ"
+              ],
+              "correctAnswer": 0,
+              "explanation": ""
+            },
+            {
+              "id": "nur-q12",
+              "text": "من أكبر فتوحات نور الدين فتح ........ ومن بعدها فتح ........، وكان لهما دور عظيم في فتح بيت المقدس.",
+              "options": [
+                "مصر، دمشق",
+                "دمشق، بغداد",
+                "دمشق، مصر",
+                "حلب، مصر"
+              ],
+              "correctAnswer": 2,
+              "explanation": ""
+            },
+            {
+              "id": "nur-q13",
+              "text": "صنع نور الدين منبرًا ليوضع في المسجد الأقصى بعد فتحه، ووضعه أمام الناس؛ لماذا؟",
+              "options": [
+                "لتجهيز كل شيء قبل التحرك نحو بيت المقدس",
+                "لتشويق نفوس الناس للعمل والمساهمة في هذا الفتح",
+                "كل ما سبق"
+              ],
+              "correctAnswer": 1,
+              "explanation": ""
+            }
           ]
         }
       ]
+    },
+    {
+      "id": "lecture-3",
+      "lectureNumber": 3,
+      "title": "بين الوعد الحق والوعد المفترى (تاريخ الصهيونية وعلاقتها بالأقصى)",
+      "lecturer": "أ. محمد الرشق",
+      "date": "2026-11-12",
+      "resourceType": "lecture",
+      "category": "القدس والأقصى",
+      "description": "",
+      "quizzes": []
+    },
+    {
+      "id": "lecture-4",
+      "lectureNumber": 4,
+      "title": "الأقصى بعيون مقدسية",
+      "lecturer": "أ. عمر عاصي",
+      "date": "2026-11-15",
+      "resourceType": "lecture",
+      "category": "القدس والأقصى",
+      "description": "",
+      "quizzes": []
+    },
+    {
+      "id": "lecture-5",
+      "lectureNumber": 5,
+      "title": "جيل التحرير",
+      "lecturer": "أ. محمد خالد",
+      "date": "2026-11-19",
+      "resourceType": "lecture",
+      "category": "القدس والأقصى",
+      "description": "",
+      "quizzes": []
     }
   ]
 };
-
-const courses = window.BASMALA_CONTENT.courses;
-const replacedCourse = courses.find(course => course.id === "lecture-1");
-const nurAlDinCourse = courses.find(course => course.id === "lecture-nur-al-din");
-if (replacedCourse && nurAlDinCourse) {
-  nurAlDinCourse.lectureNumber = replacedCourse.lectureNumber;
-  nurAlDinCourse.title = "شخصية نور الدين زنكي";
-  nurAlDinCourse.lecturer = "د. نذير الصالحي";
-  nurAlDinCourse.date = replacedCourse.date;
-  window.BASMALA_CONTENT.courses = [
-    nurAlDinCourse,
-    ...courses.filter(course => course !== replacedCourse && course !== nurAlDinCourse)
-  ];
-}
